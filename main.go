@@ -128,11 +128,12 @@ func main() {
 	t.SetStyles(s)
 
 	m := model{
-		table:  t,
-		apps:   apps,
-		filter: "",
-		width:  100, // default width
-		height: 30,  // default height
+		table:   t,
+		apps:    apps,
+		filter:  "",
+		width:   100, // default width
+		height:  30,  // default height
+		sortCol: SortLastUsed,
 	}
 	m.updateTable()
 
@@ -142,12 +143,20 @@ func main() {
 	}
 }
 
+const (
+	SortLastUsed = iota
+	SortUsage
+	SortSize
+	SortName
+)
+
 type model struct {
-	table  table.Model
-	apps   []AppInfo
-	filter string
-	width  int
-	height int
+	table   table.Model
+	apps    []AppInfo
+	filter  string
+	width   int
+	height  int
+	sortCol int
 }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -164,6 +173,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.filter = m.filter[:len(m.filter)-1]
 				m.updateTable()
 			}
+		case "tab":
+			m.sortCol = (m.sortCol + 1) % 4
+			m.updateTable()
 		default:
 			// allow typing characters for search
 			if len(msg.String()) == 1 && msg.String() >= " " && msg.String() <= "~" {
@@ -191,10 +203,25 @@ func (m *model) updateTable() {
 	}
 
 	sort.Slice(filtered, func(i, j int) bool {
-		if filtered[i].LastUsed.Equal(filtered[j].LastUsed) {
-			return filtered[i].Time.After(filtered[j].Time)
+		switch m.sortCol {
+		case SortUsage:
+			if filtered[i].UsageCount == filtered[j].UsageCount {
+				return filtered[i].Name < filtered[j].Name
+			}
+			return filtered[i].UsageCount > filtered[j].UsageCount
+		case SortSize:
+			if filtered[i].SizeBytes == filtered[j].SizeBytes {
+				return filtered[i].Name < filtered[j].Name
+			}
+			return filtered[i].SizeBytes > filtered[j].SizeBytes
+		case SortName:
+			return filtered[i].Name < filtered[j].Name
+		default: // SortLastUsed
+			if filtered[i].LastUsed.Equal(filtered[j].LastUsed) {
+				return filtered[i].Time.After(filtered[j].Time)
+			}
+			return filtered[i].LastUsed.After(filtered[j].LastUsed)
 		}
-		return filtered[i].LastUsed.After(filtered[j].LastUsed)
 	})
 
 	availableWidth := m.width - 4
@@ -256,9 +283,21 @@ func (m model) View() string {
 		searchStr = "Type to filter..."
 	}
 
-	return baseStyle.Render(m.table.View()) +
-		"\n  " + lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Render(searchStr) +
-		"\n  Press esc to quit.\n"
+	sortStr := "Last Used"
+	switch m.sortCol {
+	case SortUsage:
+		sortStr = "Usage Count"
+	case SortSize:
+		sortStr = "Size"
+	case SortName:
+		sortStr = "Name"
+	}
+
+	helpText := fmt.Sprintf("\n  %s | Sort: %s (press tab to change)\n  Press esc to quit.\n", 
+		lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Render(searchStr),
+		lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render(sortStr))
+
+	return baseStyle.Render(m.table.View()) + helpText
 }
 
 func getInstalledApps() ([]AppInfo, error) {
