@@ -13,6 +13,12 @@ A high-performance CLI tool to audit your installed applications across multiple
 - ⌨️ **Interactive TUI**: A beautiful, responsive terminal interface powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 - 🔍 **Direct Search**: Fast CLI-only search mode for quick lookups.
 
+## Privacy & Security
+
+**`cli-audit` is 100% secure and fully local.** 
+- **No Data Sharing:** It does not send any data over the internet. There are no analytics, telemetry, or network calls of any kind.
+- **Local Processing:** Your shell history (`.zsh_history`, `.bash_history`) and installed packages are read and processed entirely on your local machine.
+
 ## Installation
 
 ### From Source (Requires Go 1.21+)
