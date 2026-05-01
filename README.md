@@ -20,7 +20,7 @@ A high-performance CLI tool to audit your installed applications across multiple
 To install `cli-audit` and run it from anywhere without the `./` prefix, run:
 
 ```bash
-go install github.com/yourusername/cli-audit@latest
+go install github.com/brtkrclr/cli-audit@latest
 ```
 
 Make sure your `$GOPATH/bin` (usually `~/go/bin`) is in your `$PATH`.
@@ -28,7 +28,7 @@ Make sure your `$GOPATH/bin` (usually `~/go/bin`) is in your `$PATH`.
 ### Manual Build
 
 ```bash
-git clone https://github.com/yourusername/cli-audit.git
+git clone https://github.com/brtkrclr/cli-audit.git
 cd cli-audit
 go build -o cli-audit
 # To install locally:
